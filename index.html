@@ -108,6 +108,21 @@
   .callout-msg{font-size:13px;color:#33404F;margin-top:4px;}
   .callout-pace{font-size:12.5px;margin-top:6px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
 
+  .ai-card{background:#fff;border-radius:14px;border:1px solid var(--line);border-top:3px solid #5B21B6;padding:18px 20px;margin-bottom:22px;box-shadow:0 1px 3px rgba(11,18,32,0.04);}
+  .ai-card-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:4px;}
+  .ai-title-wrap{display:flex;align-items:center;gap:8px;}
+  .ai-title-wrap .disp{font-weight:700;font-size:15.5px;}
+  .ai-sub{font-size:12px;color:var(--soft);margin-bottom:12px;}
+  .btn-ai{background:#5B21B6;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;display:flex;gap:8px;align-items:center;font-family:inherit;white-space:nowrap;}
+  .btn-ai:hover{background:#4C1D95;}
+  .btn-ai:disabled{background:#C7BEDD;cursor:not-allowed;}
+  .ai-spinner{width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;animation:ai-spin .7s linear infinite;display:none;}
+  .btn-ai.loading .ai-spinner{display:inline-block;}
+  @keyframes ai-spin{to{transform:rotate(360deg);}}
+  .ai-body{margin-top:14px;font-size:13.5px;line-height:1.75;color:#33404F;white-space:pre-wrap;}
+  .ai-placeholder{font-size:12.5px;color:var(--amber);background:#FFF7EC;border:1px solid #F3D9A8;border-radius:8px;padding:10px 12px;margin-top:12px;}
+  .ai-error{font-size:12.5px;color:var(--red);background:#FEF2F2;border:1px solid #FCA5A5;border-radius:8px;padding:10px 12px;margin-top:12px;}
+
   .comments-card{background:#fff;border-radius:14px;border:1px solid var(--line);padding:18px 20px;}
   .comment-row{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:9px;background:#FAFBFC;border:1px solid #EEF2F6;margin-bottom:10px;}
   .comment-dot{width:8px;height:8px;border-radius:99px;margin-top:5px;flex-shrink:0;}
@@ -251,6 +266,21 @@
       </div>
     </div>
 
+    <div class="ai-card">
+      <div class="ai-card-head">
+        <div class="ai-title-wrap">
+          <span>🤖</span>
+          <span class="disp" id="aiCardTitle">Claude's take — Day 19</span>
+        </div>
+        <button class="btn-ai" id="generateAiBtn">
+          <span class="ai-spinner"></span>
+          <span id="generateAiBtnLabel">Generate commentary</span>
+        </button>
+      </div>
+      <div class="ai-sub">Sends today's pacing numbers to Claude and asks for a short, plain-English read on the situation.</div>
+      <div id="aiInsightBody" class="ai-body"></div>
+    </div>
+
     <div class="comments-card">
       <div class="disp table-title" style="margin-bottom:12px;" id="commentsTitle">Daily Comments — Day 19</div>
       <div id="commentsFeed"></div>
@@ -304,6 +334,23 @@
 // =========================================================
 const SUPABASE_URL = "https://vpwbcuxwxkqvauffqooj.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwd2JjdXh3eGtxdmF1ZmZxb29qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4MjA4NjEsImV4cCI6MjA5OTM5Njg2MX0.iAoIZXl-2G7h3wm4jcYsEs6-wdN-YKTS-KbBteBBzUk";
+
+// =========================================================
+// AI commentary ("Claude's take") — PLACEHOLDER, not wired up yet.
+// This page is static/standalone (GitHub Pages), so it can't call
+// Anthropic's API directly with a secret key. Point this at a small
+// backend/proxy you control — e.g. a Supabase Edge Function — that
+// holds the Anthropic API key server-side and forwards the request.
+//
+// Expected contract for AI_COMMENTARY_ENDPOINT:
+//   POST <endpoint>
+//   body: { sbu, day, totalDays, metrics: [{ id, label, unit, pacePct, shortfallMsg }, ...] }
+//   response (200): { commentary: "plain text response from Claude" }
+//
+// Deployed Edge Function (project vpwbcuxwxkqvauffqooj, function "ai-commentary").
+// It reads ANTHROPIC_API_KEY as a server-side secret — set that secret on the
+// project before this will return real commentary (see chat for the command).
+const AI_COMMENTARY_ENDPOINT = "https://vpwbcuxwxkqvauffqooj.supabase.co/functions/v1/ai-commentary";
 
 // Talk to Supabase's PostgREST API directly with fetch() — no external
 // SDK/CDN required, so a blocked CDN can never be the cause of a blank page.
@@ -877,6 +924,8 @@ function renderAll(){
   document.getElementById("dayOfLabel").textContent = "/ "+s.totalDays;
   document.getElementById("tableTitle").textContent = "KPI Pacing — "+currentSbu;
   document.getElementById("commentsTitle").textContent = "Daily Comments — Day "+s.today;
+  document.getElementById("aiCardTitle").textContent = "Claude's take — Day "+s.today;
+  document.getElementById("aiInsightBody").innerHTML = "";
   document.getElementById("footerNote").textContent = "Live figures for Day "+s.today+" of "+currentSbu+" (from Supabase).";
   document.getElementById("paceChartSub").textContent = "100% line = on target for Day "+s.today;
 
@@ -1063,7 +1112,55 @@ function renderCharts(ranked, s){
   });
 }
 
+// ---- AI commentary ----
+async function generateAiCommentary(){
+  const btn = document.getElementById("generateAiBtn");
+  const label = document.getElementById("generateAiBtnLabel");
+  const body = document.getElementById("aiInsightBody");
+
+  if(!AI_COMMENTARY_ENDPOINT){
+    body.innerHTML = `<div class="ai-placeholder">AI commentary isn't wired up yet — set <code>AI_COMMENTARY_ENDPOINT</code> at the top of the script to your proxy's URL (see the comment above it for the request/response contract).</div>`;
+    return;
+  }
+
+  const s = state[currentSbu];
+  const computed = computeMetrics(s).filter(c=>c.tgt);
+  const metrics = computed.map(c=>({
+    id: c.id, label: c.label, unit: c.unit,
+    pacePct: c.pacePct===null ? null : Math.round(c.pacePct*10)/10,
+    shortfallMsg: c.shortfallMsg
+  }));
+
+  btn.disabled = true;
+  btn.classList.add("loading");
+  label.textContent = "Thinking…";
+  body.innerHTML = "";
+
+  try{
+    const res = await fetch(AI_COMMENTARY_ENDPOINT, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ sbu: currentSbu, day: s.today, totalDays: s.totalDays, metrics })
+    });
+    if(!res.ok){
+      let detail = "";
+      try{ const errJson = await res.json(); detail = errJson && errJson.error ? errJson.error : ""; }catch(_e){}
+      throw new Error(detail || ("Proxy returned "+res.status));
+    }
+    const data = await res.json();
+    const text = (data && data.commentary) ? String(data.commentary).trim() : "";
+    body.textContent = text || "No commentary returned.";
+  }catch(err){
+    body.innerHTML = `<div class="ai-error">Couldn't get AI commentary: ${(err.message||err)}</div>`;
+  }finally{
+    btn.disabled = false;
+    btn.classList.remove("loading");
+    label.textContent = "Generate commentary";
+  }
+}
+
 // ---- events ----
+document.getElementById("generateAiBtn").addEventListener("click", generateAiCommentary);
 document.getElementById("sbuBtn").addEventListener("click", ()=>{
   document.getElementById("sbuMenu").classList.toggle("open");
 });
