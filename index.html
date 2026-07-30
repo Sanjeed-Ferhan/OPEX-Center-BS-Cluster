@@ -50,6 +50,11 @@
     var form = document.getElementById("pw-recovery-form");
     var doneEl = document.getElementById("pw-recovery-done");
 
+    // Show the overlay right away — we already confirmed this is a recovery
+    // link from the URL hash, so we don't need to wait on the async
+    // PASSWORD_RECOVERY auth event (which doesn't always fire in time).
+    overlay.classList.remove("hidden");
+
     recoveryClient.auth.onAuthStateChange(function(event){
       if(event === "PASSWORD_RECOVERY"){
         overlay.classList.remove("hidden");
@@ -67,6 +72,14 @@
       }
       var btn = document.getElementById("pw-recovery-submit");
       btn.disabled = true; btn.textContent = "Updating…";
+
+      var sessionCheck = await recoveryClient.auth.getSession();
+      if(!sessionCheck.data || !sessionCheck.data.session){
+        btn.disabled = false; btn.textContent = "Update password";
+        msgEl.innerHTML = '<div style="color:#c1443d;font-size:13px;">This reset link has expired or was already used. Please request a new one from the Task Assigner login screen.</div>';
+        return;
+      }
+
       var res = await recoveryClient.auth.updateUser({ password: pw1 });
       btn.disabled = false; btn.textContent = "Update password";
       if(res.error){
