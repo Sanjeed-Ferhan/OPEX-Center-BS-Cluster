@@ -3,8 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <title>Command Center Hub</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   * { box-sizing: border-box; }
+  .hidden { display:none !important; }
   body { margin:0; font-family: -apple-system, Arial, sans-serif; background:#0f1115; height:100vh; display:flex; flex-direction:column; }
   .topbar { display:flex; align-items:center; justify-content:center; padding:14px 16px; background:#181b21; border-bottom:1px solid #262a33; }
   .navwrap { display:flex; gap:6px; background:#1c2029; border-radius:999px; padding:6px; flex-wrap:wrap; }
@@ -16,6 +18,72 @@
 </style>
 </head>
 <body>
+  <div id="pw-recovery-overlay" class="hidden" style="position:fixed;inset:0;z-index:99999;background:rgba(15,17,21,0.92);display:flex;align-items:center;justify-content:center;padding:20px;font-family:-apple-system, Arial, sans-serif;">
+    <div style="max-width:380px;width:100%;background:#fff;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,0.35);padding:30px 28px;">
+      <h2 style="margin:0 0 6px;font-size:20px;color:#1c2230;">Set a new password</h2>
+      <p style="margin:0 0 20px;font-size:13px;color:#636c80;">Choose a new password for your Task Assigner account.</p>
+      <div id="pw-recovery-message" style="margin-bottom:12px;"></div>
+      <form id="pw-recovery-form">
+        <label style="display:block;font-size:13px;font-weight:600;color:#1c2230;margin-bottom:6px;">New password</label>
+        <input type="password" id="pw-recovery-new" required minlength="6" autocomplete="new-password" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #e1e4ea;border-radius:8px;font-size:14px;margin-bottom:14px;">
+        <label style="display:block;font-size:13px;font-weight:600;color:#1c2230;margin-bottom:6px;">Confirm new password</label>
+        <input type="password" id="pw-recovery-confirm" required minlength="6" autocomplete="new-password" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #e1e4ea;border-radius:8px;font-size:14px;margin-bottom:18px;">
+        <button type="submit" id="pw-recovery-submit" style="width:100%;padding:12px;background:#1e3a5f;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Update password</button>
+      </form>
+      <div id="pw-recovery-done" class="hidden" style="text-align:center;">
+        <p style="font-size:14px;color:#2f8f5b;font-weight:600;">Password updated.</p>
+        <p style="font-size:13px;color:#636c80;">Open the Task Assigner tab and sign in with your new password.</p>
+        <button type="button" id="pw-recovery-close" style="margin-top:10px;padding:10px 20px;background:#1e3a5f;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Continue</button>
+      </div>
+    </div>
+  </div>
+  <script>
+  (function(){
+    var hash = window.location.hash || "";
+    if(hash.indexOf("type=recovery") === -1 || hash.indexOf("access_token=") === -1) return;
+
+    var RECOVERY_SUPABASE_URL = "https://vpwbcuxwxkqvauffqooj.supabase.co";
+    var RECOVERY_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwd2JjdXh3eGtxdmF1ZmZxb29qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4MjA4NjEsImV4cCI6MjA5OTM5Njg2MX0.iAoIZXl-2G7h3wm4jcYsEs6-wdN-YKTS-KbBteBBzUk";
+    var recoveryClient = supabase.createClient(RECOVERY_SUPABASE_URL, RECOVERY_SUPABASE_KEY);
+    var overlay = document.getElementById("pw-recovery-overlay");
+    var msgEl = document.getElementById("pw-recovery-message");
+    var form = document.getElementById("pw-recovery-form");
+    var doneEl = document.getElementById("pw-recovery-done");
+
+    recoveryClient.auth.onAuthStateChange(function(event){
+      if(event === "PASSWORD_RECOVERY"){
+        overlay.classList.remove("hidden");
+      }
+    });
+
+    form.addEventListener("submit", async function(e){
+      e.preventDefault();
+      var pw1 = document.getElementById("pw-recovery-new").value;
+      var pw2 = document.getElementById("pw-recovery-confirm").value;
+      msgEl.innerHTML = "";
+      if(pw1 !== pw2){
+        msgEl.innerHTML = '<div style="color:#c1443d;font-size:13px;">Passwords do not match.</div>';
+        return;
+      }
+      var btn = document.getElementById("pw-recovery-submit");
+      btn.disabled = true; btn.textContent = "Updating…";
+      var res = await recoveryClient.auth.updateUser({ password: pw1 });
+      btn.disabled = false; btn.textContent = "Update password";
+      if(res.error){
+        msgEl.innerHTML = '<div style="color:#c1443d;font-size:13px;">' + res.error.message + '</div>';
+        return;
+      }
+      await recoveryClient.auth.signOut();
+      form.classList.add("hidden");
+      doneEl.classList.remove("hidden");
+      history.replaceState(null, "", window.location.pathname + window.location.search);
+    });
+
+    document.getElementById("pw-recovery-close").addEventListener("click", function(){
+      overlay.classList.add("hidden");
+    });
+  })();
+  </script>
   <div class="topbar">
     <div class="navwrap">
       <button class="navbtn active" data-target="5s">5S Audit</button>
@@ -6943,6 +7011,7 @@ function renderTable() {
   ::selection{background:rgba(226,147,47,.28);}
   button{font-family:inherit;cursor:pointer;}
   input,select,textarea{font-family:inherit;}
+  .auth-note a{color:var(--info);font-weight:600;text-decoration:underline;cursor:pointer;}
   a{color:inherit;}
 
   /* ---------- utility ---------- */
@@ -7278,7 +7347,19 @@ function renderTable() {
           <input type="password" id="login-password" required autocomplete="current-password">
         </div>
         <button class="btn-primary" type="submit" id="login-submit">Sign in</button>
+        <p class="auth-note"><a href="#" id="forgot-password-link">Forgot your password?</a></p>
         <p class="auth-note">First time here? Switch to <b>Create account</b> above.</p>
+      </form>
+
+      <!-- forgot password form -->
+      <form id="forgot-form" class="hidden">
+        <p class="auth-note" style="margin-top:0;">Enter your email and we'll send you a link to reset your password.</p>
+        <div class="field">
+          <label for="forgot-email">Email</label>
+          <input type="email" id="forgot-email" required autocomplete="email">
+        </div>
+        <button class="btn-primary" type="submit" id="forgot-submit">Send reset link</button>
+        <p class="auth-note"><a href="#" id="back-to-login-link">Back to sign in</a></p>
       </form>
 
       <!-- signup form -->
@@ -7505,13 +7586,46 @@ $("#date-stamp").textContent = new Date().toLocaleDateString(undefined,{ month:"
 /* ===================== AUTH TABS ===================== */
 $("#tab-login").addEventListener("click", ()=>{
   $("#tab-login").classList.add("active"); $("#tab-signup").classList.remove("active");
-  $("#login-form").classList.remove("hidden"); $("#signup-form").classList.add("hidden");
+  $("#login-form").classList.remove("hidden"); $("#signup-form").classList.add("hidden"); $("#forgot-form").classList.add("hidden");
   $("#auth-message").innerHTML = "";
 });
 $("#tab-signup").addEventListener("click", ()=>{
   $("#tab-signup").classList.add("active"); $("#tab-login").classList.remove("active");
-  $("#signup-form").classList.remove("hidden"); $("#login-form").classList.add("hidden");
+  $("#signup-form").classList.remove("hidden"); $("#login-form").classList.add("hidden"); $("#forgot-form").classList.add("hidden");
   $("#auth-message").innerHTML = "";
+});
+
+/* ===================== FORGOT PASSWORD ===================== */
+$("#forgot-password-link").addEventListener("click", (e)=>{
+  e.preventDefault();
+  $("#login-form").classList.add("hidden");
+  $("#signup-form").classList.add("hidden");
+  $("#forgot-form").classList.remove("hidden");
+  $("#tab-login").classList.remove("active"); $("#tab-signup").classList.remove("active");
+  $("#auth-message").innerHTML = "";
+});
+$("#back-to-login-link").addEventListener("click", (e)=>{
+  e.preventDefault();
+  $("#tab-login").click();
+});
+$("#forgot-form").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const btn = $("#forgot-submit");
+  btn.disabled = true; btn.textContent = "Sending…";
+  $("#auth-message").innerHTML = "";
+  let redirectTarget;
+  try { redirectTarget = window.top.location.href.split("#")[0]; }
+  catch(err) { redirectTarget = window.location.href.split("#")[0]; }
+  const { error } = await db.auth.resetPasswordForEmail($("#forgot-email").value.trim(), {
+    redirectTo: redirectTarget
+  });
+  btn.disabled = false; btn.textContent = "Send reset link";
+  if(error){
+    $("#auth-message").innerHTML = `<div class="auth-error">${error.message}</div>`;
+    return;
+  }
+  $("#tab-login").click();
+  $("#auth-message").innerHTML = `<div class="auth-success">If an account exists for that email, a reset link is on its way — check your inbox (and spam folder).</div>`;
 });
 
 /* ===================== AUTH ACTIONS ===================== */
