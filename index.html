@@ -25,6 +25,7 @@
 <button class="navbtn" data-target="training">Training Command Center</button>
 <button class="navbtn" data-target="kpi">KPI Target Entry</button>
 <button class="navbtn" data-target="qcp">QCP Audit</button>
+<button class="navbtn" data-target="task-assigner">Task Assigner</button>
     </div>
   </div>
   <div class="frame-wrap">
@@ -6892,6 +6893,1020 @@ function renderTable() {
         decideGate();
         await loadEntries();
     })();
+%%ENDSCRIPT%%>
+</body>
+</html>
+</script>
+
+<script type="text/plain" id="tpl-task-assigner"><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Work Order — Task Assigner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">%%ENDSCRIPT%%>
+<style>
+  :root{
+    --bg:#F2F3F6;
+    --surface:#FFFFFF;
+    --ink:#1C2230;
+    --ink-soft:#636C80;
+    --ink-faint:#9AA1B2;
+    --primary:#1E3A5F;
+    --primary-ink:#EAF0F8;
+    --accent:#E2932F;
+    --danger:#C1443D;
+    --success:#2F8F5B;
+    --info:#3B6FA0;
+    --border:#E1E4EA;
+    --border-strong:#C7CCD8;
+    --radius:10px;
+    --shadow:0 1px 2px rgba(28,34,48,.06), 0 8px 24px -12px rgba(28,34,48,.18);
+    --font-display:'Barlow Condensed',sans-serif;
+    --font-body:'Inter',sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(180deg, rgba(30,58,95,.03), rgba(30,58,95,0) 220px),
+      var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:rgba(226,147,47,.28);}
+  button{font-family:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;}
+  a{color:inherit;}
+
+  /* ---------- utility ---------- */
+  .hidden{display:none !important;}
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible{
+    outline:2.5px solid var(--accent); outline-offset:2px;
+  }
+
+  /* ---------- login screen ---------- */
+  #auth-screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .badge-card{
+    width:100%;
+    max-width:400px;
+    background:var(--surface);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+    border:1px solid var(--border);
+    overflow:hidden;
+  }
+  .badge-header{
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.05) 0 10px, transparent 10px 20px),
+      linear-gradient(135deg, var(--primary), #16283F);
+    color:var(--primary-ink);
+    padding:28px 28px 22px;
+    position:relative;
+  }
+  .badge-eyebrow{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    opacity:.75;
+    display:flex;
+    justify-content:space-between;
+  }
+  .badge-title{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:34px;
+    line-height:1.05;
+    margin:10px 0 2px;
+    letter-spacing:.01em;
+  }
+  .badge-sub{font-size:13px;opacity:.8;margin:0;}
+  .badge-punch{
+    position:absolute; top:50%; right:-11px; width:22px;height:22px;border-radius:50%;
+    background:var(--bg); transform:translateY(-50%);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+  .badge-body{padding:26px 28px 28px;}
+  .tabs{display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:9px;margin-bottom:20px;}
+  .tab-btn{
+    flex:1;border:none;background:transparent;padding:9px 0;border-radius:6px;
+    font-family:var(--font-display);font-weight:600;font-size:16px;letter-spacing:.02em;
+    color:var(--ink-soft);
+  }
+  .tab-btn.active{background:var(--surface);color:var(--primary);box-shadow:var(--shadow);}
+  .field{margin-bottom:14px;}
+  .field label{
+    display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;
+    color:var(--ink-soft);margin-bottom:6px;
+  }
+  .field input, .field select{
+    width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:8px;
+    font-size:14.5px;color:var(--ink);background:var(--surface);
+  }
+  .field input:focus, .field select:focus{border-color:var(--primary);}
+  .role-pick{display:flex;gap:8px;}
+  .role-pick label{
+    flex:1;display:flex;flex-direction:column;gap:2px;border:1.5px solid var(--border);
+    border-radius:8px;padding:10px 12px;cursor:pointer;font-size:13px;color:var(--ink-soft);
+    font-weight:500;text-transform:none;letter-spacing:0;
+  }
+  .role-pick input{width:auto;accent-color:var(--primary);margin-right:6px;}
+  .role-pick input:checked + span{color:var(--primary);font-weight:700;}
+  .role-pick label:has(input:checked){border-color:var(--primary);background:#F3F7FB;}
+  .btn-primary{
+    width:100%;background:var(--primary);color:#fff;border:none;border-radius:8px;
+    padding:12px;font-weight:700;font-size:14.5px;letter-spacing:.02em;margin-top:4px;
+    transition:background .15s;
+  }
+  .btn-primary:hover{background:#16283F;}
+  .btn-primary:disabled{opacity:.6;cursor:default;}
+  .auth-note{font-size:12.5px;color:var(--ink-soft);margin-top:14px;text-align:center;line-height:1.5;}
+  .auth-error{
+    background:#FCEEEC;color:var(--danger);border:1px solid #F3C9C4;border-radius:8px;
+    padding:9px 12px;font-size:13px;margin-bottom:14px;
+  }
+  .auth-success{
+    background:#EAF5EF;color:var(--success);border:1px solid #C7E6D3;border-radius:8px;
+    padding:9px 12px;font-size:13px;margin-bottom:14px;
+  }
+
+  /* ---------- app shell ---------- */
+  #app-screen{min-height:100vh;}
+  .topbar{
+    background:var(--primary);color:var(--primary-ink);padding:0 24px;
+    display:flex;align-items:center;justify-content:space-between;height:64px;
+    position:sticky;top:0;z-index:20;
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{
+    width:32px;height:32px;border:2px solid var(--accent);border-radius:6px;
+    display:flex;align-items:center;justify-content:center;font-family:var(--font-display);
+    font-weight:800;color:var(--accent);font-size:16px;transform:rotate(-3deg);
+  }
+  .brand-text{font-family:var(--font-display);font-weight:700;font-size:21px;letter-spacing:.01em;}
+  .brand-text small{display:block;font-family:var(--font-mono);font-size:10px;font-weight:400;
+    letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-top:-2px;}
+  .topbar-right{display:flex;align-items:center;gap:14px;}
+  .who{text-align:right;font-size:12.5px;line-height:1.35;}
+  .who b{font-weight:600;}
+  .who span{display:block;color:rgba(234,240,248,.65);font-family:var(--font-mono);font-size:10.5px;
+    text-transform:uppercase;letter-spacing:.1em;}
+  .btn-ghost-light{
+    background:rgba(255,255,255,.08);color:var(--primary-ink);border:1px solid rgba(255,255,255,.2);
+    border-radius:7px;padding:8px 13px;font-size:13px;font-weight:600;
+  }
+  .btn-ghost-light:hover{background:rgba(255,255,255,.16);}
+
+  .container{max-width:1180px;margin:0 auto;padding:26px 24px 60px;}
+  .page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+  .page-head h1{
+    font-family:var(--font-display);font-weight:700;font-size:30px;margin:0 0 2px;color:var(--ink);
+  }
+  .page-head p{margin:0;color:var(--ink-soft);font-size:14px;}
+  .controls-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .select-chip{
+    border:1.5px solid var(--border);background:var(--surface);border-radius:7px;padding:8px 10px;
+    font-size:13px;color:var(--ink);
+  }
+  .btn-accent{
+    background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 16px;
+    font-weight:700;font-size:14px;box-shadow:0 4px 12px -4px rgba(226,147,47,.6);
+  }
+  .btn-accent:hover{background:#CC7F1F;}
+
+  .empty-state{
+    background:var(--surface);border:1.5px dashed var(--border-strong);border-radius:var(--radius);
+    padding:40px 24px;text-align:center;color:var(--ink-soft);
+  }
+  .empty-state h3{font-family:var(--font-display);font-size:20px;color:var(--ink);margin:0 0 4px;}
+  .empty-state p{margin:0;font-size:13.5px;}
+
+  /* ---------- board ---------- */
+  .board{display:grid;grid-template-columns:repeat(4,minmax(240px,1fr));gap:16px;align-items:start;}
+  @media (max-width:980px){.board{grid-template-columns:1fr 1fr;}}
+  @media (max-width:620px){.board{grid-template-columns:1fr;}}
+  .col{background:transparent;}
+  .col-head{
+    display:flex;align-items:center;justify-content:space-between;padding:0 2px 10px;
+  }
+  .col-head h3{
+    font-family:var(--font-display);font-size:16px;font-weight:700;letter-spacing:.03em;
+    text-transform:uppercase;margin:0;color:var(--ink-soft);display:flex;align-items:center;gap:7px;
+  }
+  .col-dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+  .col-count{
+    font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);
+    background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:1px 8px;
+  }
+  .col-body{display:flex;flex-direction:column;gap:10px;min-height:40px;}
+
+  /* ---------- ticket card ---------- */
+  .ticket{
+    background:var(--surface);border:1px solid var(--border);border-radius:9px;
+    box-shadow:var(--shadow);padding:14px 14px 12px;cursor:pointer;position:relative;
+    transition:transform .12s, box-shadow .12s;
+  }
+  .ticket:hover{transform:translateY(-2px);box-shadow:0 4px 14px -6px rgba(28,34,48,.28);}
+  .ticket-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;}
+  .ticket-id{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-faint);letter-spacing:.03em;}
+  .prio-tag{
+    font-family:var(--font-mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;
+    font-weight:600;padding:2px 6px;border-radius:4px;border:1px solid;
+  }
+  .prio-high{color:var(--danger);border-color:#F0BFB9;background:#FCEEEC;}
+  .prio-medium{color:var(--accent);border-color:#F3D6A6;background:#FCF3E5;}
+  .prio-low{color:var(--info);border-color:#C4D8E9;background:#EDF3FA;}
+  .ticket-title{font-weight:600;font-size:14.5px;line-height:1.35;margin:0 0 10px;color:var(--ink);}
+  .ticket-meta{
+    display:flex;justify-content:space-between;align-items:center;border-top:1px dashed var(--border-strong);
+    padding-top:9px;font-size:12px;color:var(--ink-soft);
+  }
+  .ticket-person{display:flex;align-items:center;gap:6px;overflow:hidden;}
+  .avatar{
+    width:20px;height:20px;border-radius:50%;background:var(--primary);color:#fff;flex:none;
+    display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;
+    font-family:var(--font-display);
+  }
+  .ticket-due{font-family:var(--font-mono);font-size:11px;white-space:nowrap;}
+  .ticket-due.overdue{color:var(--danger);font-weight:600;}
+
+  /* ---------- list (member view) ---------- */
+  .task-list{display:flex;flex-direction:column;gap:10px;}
+  .list-row{
+    background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:14px 16px;
+    display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:var(--shadow);
+  }
+  .list-row:hover{border-color:var(--border-strong);}
+  .stamp{
+    font-family:var(--font-display);font-weight:700;font-size:11px;text-transform:uppercase;
+    letter-spacing:.08em;border:2px solid;border-radius:4px;padding:3px 9px;transform:rotate(-3deg);
+    flex:none;white-space:nowrap;
+  }
+  .stamp-todo{color:var(--ink-soft);border-color:var(--ink-faint);}
+  .stamp-in_progress{color:var(--info);border-color:var(--info);}
+  .stamp-blocked{color:var(--danger);border-color:var(--danger);}
+  .stamp-done{color:var(--success);border-color:var(--success);}
+  .list-row-main{flex:1;min-width:0;}
+  .list-row-main .ticket-title{margin:0 0 3px;}
+  .list-row-sub{font-size:12px;color:var(--ink-soft);display:flex;gap:10px;flex-wrap:wrap;}
+
+  /* ---------- modal ---------- */
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(20,24,33,.5);display:flex;align-items:flex-start;
+    justify-content:center;padding:5vh 20px;overflow-y:auto;z-index:50;
+  }
+  .modal{
+    background:var(--surface);border-radius:14px;max-width:520px;width:100%;box-shadow:0 30px 60px -20px rgba(0,0,0,.4);
+    animation:pop .16s ease-out;
+  }
+  @keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98);}to{opacity:1;transform:none;}}
+  .modal-head{
+    display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid var(--border);
+  }
+  .modal-head h2{font-family:var(--font-display);font-size:21px;margin:0;color:var(--ink);}
+  .icon-btn{
+    background:transparent;border:none;color:var(--ink-soft);font-size:20px;line-height:1;padding:4px 6px;border-radius:6px;
+  }
+  .icon-btn:hover{background:var(--bg);}
+  .modal-body{padding:20px 22px 22px;}
+  .modal-body .field textarea{
+    width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;
+    resize:vertical;min-height:80px;color:var(--ink);
+  }
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+  /* ---------- task detail ---------- */
+  .detail-top{margin-bottom:16px;}
+  .detail-badges{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+  .detail-desc{font-size:14px;color:var(--ink);line-height:1.55;margin:0 0 14px;white-space:pre-wrap;}
+  .detail-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;background:var(--bg);border-radius:8px;
+    padding:12px 14px;margin-bottom:6px;font-size:12.5px;
+  }
+  .detail-grid div span{display:block;color:var(--ink-faint);font-size:10.5px;text-transform:uppercase;
+    letter-spacing:.07em;font-family:var(--font-mono);margin-bottom:2px;}
+  .status-row{display:flex;gap:8px;margin:16px 0 6px;flex-wrap:wrap;}
+  .status-btn{
+    border:1.5px solid var(--border);background:var(--surface);border-radius:20px;padding:6px 13px;
+    font-size:12px;font-weight:600;color:var(--ink-soft);
+  }
+  .status-btn.current{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .updates-feed{margin-top:18px;border-top:1px solid var(--border);padding-top:14px;}
+  .updates-feed h4{
+    font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.09em;
+    color:var(--ink-soft);margin:0 0 12px;
+  }
+  .update-item{display:flex;gap:10px;margin-bottom:12px;}
+  .update-item .avatar{width:26px;height:26px;font-size:11px;margin-top:2px;}
+  .update-content{flex:1;background:var(--bg);border-radius:8px;padding:9px 12px;}
+  .update-content .u-head{display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px;}
+  .update-content .u-name{font-weight:700;color:var(--ink);}
+  .update-content .u-time{color:var(--ink-faint);font-family:var(--font-mono);font-size:10.5px;}
+  .update-content .u-note{font-size:13px;color:var(--ink);line-height:1.45;}
+  .update-content .u-status-chip{
+    font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--info);margin-top:3px;display:inline-block;
+  }
+  .update-composer{display:flex;gap:8px;margin-top:14px;}
+  .update-composer textarea{
+    flex:1;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13.5px;
+    resize:none;min-height:44px;font-family:inherit;
+  }
+  .update-composer button{
+    background:var(--primary);color:#fff;border:none;border-radius:8px;padding:0 16px;font-weight:700;font-size:13px;
+  }
+  .update-composer button:disabled{opacity:.5;}
+
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:11px 18px;border-radius:8px;font-size:13.5px;
+    box-shadow:0 10px 24px -6px rgba(0,0,0,.35);z-index:100;opacity:0;transition:opacity .2s, transform .2s;
+    pointer-events:none;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
+  .toast.err{background:var(--danger);}
+
+  .loading-row{display:flex;align-items:center;gap:8px;color:var(--ink-soft);font-size:13px;padding:20px 2px;}
+  .spinner{
+    width:14px;height:14px;border-radius:50%;border:2px solid var(--border-strong);border-top-color:var(--primary);
+    animation:spin .7s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH SCREEN ============ -->
+<div id="auth-screen">
+  <div class="badge-card">
+    <div class="badge-header">
+      <div class="badge-eyebrow"><span>Access Panel</span><span id="date-stamp"></span></div>
+      <div class="badge-title">Work Order</div>
+      <p class="badge-sub">Assign it. Track it. Close it out.</p>
+      <div class="badge-punch"></div>
+    </div>
+    <div class="badge-body">
+      <div class="tabs">
+        <button class="tab-btn active" id="tab-login" type="button">Sign in</button>
+        <button class="tab-btn" id="tab-signup" type="button">Create account</button>
+      </div>
+
+      <div id="auth-message"></div>
+
+      <!-- login form -->
+      <form id="login-form">
+        <div class="field">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" required autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" required autocomplete="current-password">
+        </div>
+        <button class="btn-primary" type="submit" id="login-submit">Sign in</button>
+        <p class="auth-note">First time here? Switch to <b>Create account</b> above.</p>
+      </form>
+
+      <!-- signup form -->
+      <form id="signup-form" class="hidden">
+        <div class="field">
+          <label for="signup-name">Full name</label>
+          <input type="text" id="signup-name" required autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="signup-email">Email</label>
+          <input type="email" id="signup-email" required autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="signup-password">Password</label>
+          <input type="password" id="signup-password" required minlength="6" autocomplete="new-password">
+        </div>
+        <div class="field">
+          <label>Account type</label>
+          <div class="role-pick">
+            <label><input type="radio" name="role" value="member" checked><span>Team member</span><br><small style="font-weight:400;color:var(--ink-faint);">Receives &amp; updates tasks</small></label>
+            <label><input type="radio" name="role" value="manager"><span>Assigner</span><br><small style="font-weight:400;color:var(--ink-faint);">Creates &amp; assigns tasks</small></label>
+          </div>
+        </div>
+        <button class="btn-primary" type="submit" id="signup-submit">Create account</button>
+        <p class="auth-note">Already registered? Switch to <b>Sign in</b> above.</p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP SCREEN ============ -->
+<div id="app-screen" class="hidden">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">WO</div>
+      <div class="brand-text">Work Order<small>Task Assigner</small></div>
+    </div>
+    <div class="topbar-right">
+      <div class="who"><b id="who-name">—</b><span id="who-role">—</span></div>
+      <button class="btn-ghost-light" id="signout-btn" type="button">Sign out</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- MANAGER VIEW -->
+    <div id="manager-view" class="hidden">
+      <div class="page-head">
+        <div>
+          <h1>Task board</h1>
+          <p>Everything you've assigned, sorted by status.</p>
+        </div>
+        <div class="controls-row">
+          <select id="filter-assignee" class="select-chip"><option value="">All team members</option></select>
+          <button class="btn-accent" id="new-task-btn" type="button">+ New task</button>
+        </div>
+      </div>
+      <div id="manager-loading" class="loading-row"><span class="spinner"></span> Loading tasks…</div>
+      <div id="board" class="board hidden"></div>
+      <div id="manager-empty" class="empty-state hidden">
+        <h3>No tasks yet</h3>
+        <p>Create your first task and assign it to someone on the team.</p>
+      </div>
+    </div>
+
+    <!-- MEMBER VIEW -->
+    <div id="member-view" class="hidden">
+      <div class="page-head">
+        <div>
+          <h1>My tasks</h1>
+          <p>What's been assigned to you — tap one to post an update.</p>
+        </div>
+        <div class="controls-row">
+          <select id="member-filter-status" class="select-chip">
+            <option value="">All statuses</option>
+            <option value="todo">To do</option>
+            <option value="in_progress">In progress</option>
+            <option value="blocked">Blocked</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
+      </div>
+      <div id="member-loading" class="loading-row"><span class="spinner"></span> Loading tasks…</div>
+      <div id="task-list" class="task-list hidden"></div>
+      <div id="member-empty" class="empty-state hidden">
+        <h3>Nothing assigned yet</h3>
+        <p>Tasks your manager assigns to you will show up here.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ NEW TASK MODAL ============ -->
+<div id="new-task-modal" class="modal-backdrop hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>New task</h2>
+      <button class="icon-btn" id="close-new-task" type="button">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="new-task-form">
+        <div class="field">
+          <label for="nt-title">Title</label>
+          <input type="text" id="nt-title" required placeholder="e.g. Recalibrate line 3 sensor">
+        </div>
+        <div class="field">
+          <label for="nt-desc">Description</label>
+          <textarea id="nt-desc" placeholder="Add any detail the assignee will need"></textarea>
+        </div>
+        <div class="two-col">
+          <div class="field">
+            <label for="nt-assignee">Assign to</label>
+            <select id="nt-assignee" required></select>
+          </div>
+          <div class="field">
+            <label for="nt-priority">Priority</label>
+            <select id="nt-priority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="nt-due">Due date (optional)</label>
+          <input type="date" id="nt-due">
+        </div>
+        <button class="btn-primary" type="submit" id="nt-submit">Assign task</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TASK DETAIL MODAL ============ -->
+<div id="detail-modal" class="modal-backdrop hidden">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-head">
+      <h2 id="dt-title" style="font-size:19px;">Task</h2>
+      <button class="icon-btn" id="close-detail" type="button">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-top">
+        <div class="detail-badges">
+          <span id="dt-priority" class="prio-tag prio-medium">Medium</span>
+          <span id="dt-id" class="ticket-id"></span>
+        </div>
+        <p id="dt-desc" class="detail-desc"></p>
+        <div class="detail-grid">
+          <div><span>Assigned to</span><b id="dt-assignee">—</b></div>
+          <div><span>Assigned by</span><b id="dt-assigner">—</b></div>
+          <div><span>Due date</span><b id="dt-due">—</b></div>
+          <div><span>Created</span><b id="dt-created">—</b></div>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);">Status</label>
+        <div class="status-row" id="dt-status-row"></div>
+      </div>
+      <div class="updates-feed">
+        <h4>Update log</h4>
+        <div id="dt-updates"></div>
+        <div class="update-composer">
+          <textarea id="dt-note" placeholder="Post a progress update…"></textarea>
+          <button id="dt-post-update" type="button">Post</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/* ===================== CONFIG ===================== */
+const SUPABASE_URL = "https://vpwbcuxwxkqvauffqooj.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwd2JjdXh3eGtxdmF1ZmZxb29qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4MjA4NjEsImV4cCI6MjA5OTM5Njg2MX0.iAoIZXl-2G7h3wm4jcYsEs6-wdN-YKTS-KbBteBBzUk";
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ===================== STATE ===================== */
+let currentUser = null;   // auth user
+let myProfile = null;     // { id, email, full_name, role }
+let profilesById = {};    // cache of all profiles
+let allTasks = [];        // manager: all tasks. member: own tasks.
+let activeTaskId = null;
+let realtimeChannel = null;
+
+const STATUS_LABELS = { todo:"To do", in_progress:"In progress", blocked:"Blocked", done:"Done" };
+const STATUS_ORDER = ["todo","in_progress","blocked","done"];
+const STATUS_DOT = { todo:"#9AA1B2", in_progress:"#3B6FA0", blocked:"#C1443D", done:"#2F8F5B" };
+
+/* ===================== HELPERS ===================== */
+function $(sel){ return document.querySelector(sel); }
+function $all(sel){ return Array.from(document.querySelectorAll(sel)); }
+function initials(name){
+  if(!name) return "?";
+  return name.trim().split(/\s+/).slice(0,2).map(w=>w[0].toUpperCase()).join("");
+}
+function fmtDate(d){
+  if(!d) return "—";
+  const dt = new Date(d);
+  return dt.toLocaleDateString(undefined,{ month:"short", day:"numeric", year:"numeric" });
+}
+function fmtDateTime(d){
+  const dt = new Date(d);
+  return dt.toLocaleDateString(undefined,{ month:"short", day:"numeric" }) + " · " +
+    dt.toLocaleTimeString(undefined,{ hour:"numeric", minute:"2-digit" });
+}
+function isOverdue(due, status){
+  if(!due || status === "done") return false;
+  return new Date(due) < new Date(new Date().toDateString());
+}
+function shortId(id){ return id ? id.slice(0,8) : ""; }
+function showToast(msg, isErr){
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.toggle("err", !!isErr);
+  t.classList.add("show");
+  clearTimeout(showToast._tm);
+  showToast._tm = setTimeout(()=>t.classList.remove("show"), 2600);
+}
+
+$("#date-stamp").textContent = new Date().toLocaleDateString(undefined,{ month:"short", day:"2-digit", year:"numeric" });
+
+/* ===================== AUTH TABS ===================== */
+$("#tab-login").addEventListener("click", ()=>{
+  $("#tab-login").classList.add("active"); $("#tab-signup").classList.remove("active");
+  $("#login-form").classList.remove("hidden"); $("#signup-form").classList.add("hidden");
+  $("#auth-message").innerHTML = "";
+});
+$("#tab-signup").addEventListener("click", ()=>{
+  $("#tab-signup").classList.add("active"); $("#tab-login").classList.remove("active");
+  $("#signup-form").classList.remove("hidden"); $("#login-form").classList.add("hidden");
+  $("#auth-message").innerHTML = "";
+});
+
+/* ===================== AUTH ACTIONS ===================== */
+$("#login-form").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const btn = $("#login-submit");
+  btn.disabled = true; btn.textContent = "Signing in…";
+  $("#auth-message").innerHTML = "";
+  const { error } = await db.auth.signInWithPassword({
+    email: $("#login-email").value.trim(),
+    password: $("#login-password").value
+  });
+  btn.disabled = false; btn.textContent = "Sign in";
+  if(error){
+    $("#auth-message").innerHTML = `<div class="auth-error">${error.message}</div>`;
+  }
+});
+
+$("#signup-form").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const btn = $("#signup-submit");
+  btn.disabled = true; btn.textContent = "Creating account…";
+  $("#auth-message").innerHTML = "";
+  const role = $all('input[name="role"]').find(r=>r.checked).value;
+  const { data, error } = await db.auth.signUp({
+    email: $("#signup-email").value.trim(),
+    password: $("#signup-password").value,
+    options: { data: { full_name: $("#signup-name").value.trim(), role } }
+  });
+  btn.disabled = false; btn.textContent = "Create account";
+  if(error){
+    $("#auth-message").innerHTML = `<div class="auth-error">${error.message}</div>`;
+    return;
+  }
+  if(data.session){
+    // signed in immediately (email confirmation disabled)
+  } else {
+    $("#auth-message").innerHTML = `<div class="auth-success">Account created. Check your email to confirm it, then sign in.</div>`;
+    $("#tab-login").click();
+  }
+});
+
+$("#signout-btn").addEventListener("click", async ()=>{
+  await db.auth.signOut();
+});
+
+/* ===================== SESSION / BOOT ===================== */
+db.auth.onAuthStateChange((event, session)=>{
+  if(session && session.user){
+    currentUser = session.user;
+    boot();
+  } else {
+    currentUser = null; myProfile = null;
+    if(realtimeChannel){ db.removeChannel(realtimeChannel); realtimeChannel = null; }
+    $("#app-screen").classList.add("hidden");
+    $("#auth-screen").classList.remove("hidden");
+  }
+});
+
+async function boot(){
+  $("#auth-screen").classList.add("hidden");
+  $("#app-screen").classList.remove("hidden");
+
+  const { data: profile, error } = await db.from("profiles").select("*").eq("id", currentUser.id).single();
+  if(error || !profile){
+    showToast("Couldn't load your profile.", true);
+    return;
+  }
+  myProfile = profile;
+  $("#who-name").textContent = myProfile.full_name;
+  $("#who-role").textContent = myProfile.role === "manager" ? "Assigner" : "Team member";
+
+  await loadAllProfiles();
+
+  if(myProfile.role === "manager"){
+    $("#manager-view").classList.remove("hidden");
+    $("#member-view").classList.add("hidden");
+    populateAssigneeOptions();
+    await loadManagerTasks();
+  } else {
+    $("#member-view").classList.remove("hidden");
+    $("#manager-view").classList.add("hidden");
+    await loadMemberTasks();
+  }
+
+  subscribeRealtime();
+}
+
+async function loadAllProfiles(){
+  const { data, error } = await db.from("profiles").select("id, full_name, email, role");
+  if(!error && data){
+    profilesById = {};
+    data.forEach(p=> profilesById[p.id] = p);
+  }
+}
+
+function populateAssigneeOptions(){
+  const sel = $("#nt-assignee");
+  const filterSel = $("#filter-assignee");
+  sel.innerHTML = "";
+  filterSel.innerHTML = '<option value="">All team members</option>';
+  Object.values(profilesById)
+    .filter(p=>p.id !== myProfile.id)
+    .sort((a,b)=>a.full_name.localeCompare(b.full_name))
+    .forEach(p=>{
+      const opt = document.createElement("option");
+      opt.value = p.id; opt.textContent = `${p.full_name} (${p.role === "manager" ? "Assigner" : "Member"})`;
+      sel.appendChild(opt);
+      const opt2 = opt.cloneNode(true);
+      filterSel.appendChild(opt2);
+    });
+}
+
+/* ===================== REALTIME ===================== */
+function subscribeRealtime(){
+  if(realtimeChannel) db.removeChannel(realtimeChannel);
+  realtimeChannel = db.channel("task-assigner-changes")
+    .on("postgres_changes", { event:"*", schema:"public", table:"tasks" }, ()=>{
+      if(myProfile.role === "manager") loadManagerTasks(); else loadMemberTasks();
+    })
+    .on("postgres_changes", { event:"*", schema:"public", table:"task_updates" }, (payload)=>{
+      if(activeTaskId && payload.new && payload.new.task_id === activeTaskId){
+        loadTaskUpdates(activeTaskId);
+      }
+    })
+    .subscribe();
+}
+
+/* ===================== MANAGER: LOAD + RENDER BOARD ===================== */
+async function loadManagerTasks(){
+  $("#manager-loading").classList.remove("hidden");
+  $("#board").classList.add("hidden");
+  $("#manager-empty").classList.add("hidden");
+
+  const { data, error } = await db.from("tasks")
+    .select("*")
+    .eq("assigned_by", myProfile.id)
+    .order("created_at", { ascending:false });
+
+  $("#manager-loading").classList.add("hidden");
+
+  if(error){ showToast("Couldn't load tasks.", true); return; }
+  allTasks = data || [];
+  renderBoard();
+}
+
+function renderBoard(){
+  const filterId = $("#filter-assignee").value;
+  const filtered = filterId ? allTasks.filter(t=>t.assigned_to === filterId) : allTasks;
+
+  if(allTasks.length === 0){
+    $("#manager-empty").classList.remove("hidden");
+    $("#board").classList.add("hidden");
+    return;
+  }
+  $("#manager-empty").classList.add("hidden");
+  $("#board").classList.remove("hidden");
+
+  const board = $("#board");
+  board.innerHTML = "";
+  STATUS_ORDER.forEach(status=>{
+    const col = document.createElement("div");
+    col.className = "col";
+    const items = filtered.filter(t=>t.status === status);
+    col.innerHTML = `
+      <div class="col-head">
+        <h3><span class="col-dot" style="background:${STATUS_DOT[status]}"></span>${STATUS_LABELS[status]}</h3>
+        <span class="col-count">${items.length}</span>
+      </div>
+      <div class="col-body"></div>
+    `;
+    const body = col.querySelector(".col-body");
+    items.forEach(t=> body.appendChild(renderTicket(t)));
+    board.appendChild(col);
+  });
+}
+
+function renderTicket(t){
+  const assignee = profilesById[t.assigned_to];
+  const el = document.createElement("div");
+  el.className = "ticket";
+  el.addEventListener("click", ()=> openDetail(t.id));
+  const overdue = isOverdue(t.due_date, t.status);
+  el.innerHTML = `
+    <div class="ticket-top">
+      <span class="ticket-id">#${shortId(t.id)}</span>
+      <span class="prio-tag prio-${t.priority}">${t.priority}</span>
+    </div>
+    <p class="ticket-title">${escapeHtml(t.title)}</p>
+    <div class="ticket-meta">
+      <span class="ticket-person">
+        <span class="avatar">${initials(assignee ? assignee.full_name : "?")}</span>
+        ${assignee ? escapeHtml(assignee.full_name) : "Unassigned"}
+      </span>
+      <span class="ticket-due ${overdue?'overdue':''}">${t.due_date ? fmtDate(t.due_date) : ""}</span>
+    </div>
+  `;
+  return el;
+}
+
+function escapeHtml(s){
+  const d = document.createElement("div");
+  d.textContent = s || "";
+  return d.innerHTML;
+}
+
+$("#filter-assignee").addEventListener("change", renderBoard);
+
+/* ===================== MEMBER: LOAD + RENDER LIST ===================== */
+async function loadMemberTasks(){
+  $("#member-loading").classList.remove("hidden");
+  $("#task-list").classList.add("hidden");
+  $("#member-empty").classList.add("hidden");
+
+  const { data, error } = await db.from("tasks")
+    .select("*")
+    .eq("assigned_to", myProfile.id)
+    .order("created_at", { ascending:false });
+
+  $("#member-loading").classList.add("hidden");
+  if(error){ showToast("Couldn't load tasks.", true); return; }
+  allTasks = data || [];
+  renderTaskList();
+}
+
+function renderTaskList(){
+  const statusFilter = $("#member-filter-status").value;
+  const filtered = statusFilter ? allTasks.filter(t=>t.status === statusFilter) : allTasks;
+
+  if(allTasks.length === 0){
+    $("#member-empty").classList.remove("hidden");
+    $("#task-list").classList.add("hidden");
+    return;
+  }
+  $("#member-empty").classList.add("hidden");
+  $("#task-list").classList.remove("hidden");
+
+  const list = $("#task-list");
+  list.innerHTML = "";
+  filtered.forEach(t=>{
+    const assigner = profilesById[t.assigned_by];
+    const overdue = isOverdue(t.due_date, t.status);
+    const row = document.createElement("div");
+    row.className = "list-row";
+    row.addEventListener("click", ()=> openDetail(t.id));
+    row.innerHTML = `
+      <span class="stamp stamp-${t.status}">${STATUS_LABELS[t.status]}</span>
+      <div class="list-row-main">
+        <p class="ticket-title">${escapeHtml(t.title)}</p>
+        <div class="list-row-sub">
+          <span>From ${assigner ? escapeHtml(assigner.full_name) : "—"}</span>
+          <span class="prio-tag prio-${t.priority}" style="margin:0;">${t.priority}</span>
+          ${t.due_date ? `<span class="${overdue?'overdue':''}" style="font-family:var(--font-mono);">Due ${fmtDate(t.due_date)}</span>` : ""}
+        </div>
+      </div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+$("#member-filter-status").addEventListener("change", renderTaskList);
+
+/* ===================== NEW TASK MODAL ===================== */
+$("#new-task-btn").addEventListener("click", ()=>{
+  $("#new-task-form").reset();
+  $("#new-task-modal").classList.remove("hidden");
+});
+$("#close-new-task").addEventListener("click", ()=> $("#new-task-modal").classList.add("hidden"));
+$("#new-task-modal").addEventListener("click", (e)=>{ if(e.target.id === "new-task-modal") $("#new-task-modal").classList.add("hidden"); });
+
+$("#new-task-form").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const btn = $("#nt-submit");
+  btn.disabled = true; btn.textContent = "Assigning…";
+  const payload = {
+    title: $("#nt-title").value.trim(),
+    description: $("#nt-desc").value.trim() || null,
+    assigned_to: $("#nt-assignee").value,
+    assigned_by: myProfile.id,
+    priority: $("#nt-priority").value,
+    due_date: $("#nt-due").value || null
+  };
+  const { error } = await db.from("tasks").insert(payload);
+  btn.disabled = false; btn.textContent = "Assign task";
+  if(error){
+    showToast("Couldn't create task: " + error.message, true);
+    return;
+  }
+  $("#new-task-modal").classList.add("hidden");
+  showToast("Task assigned.");
+  loadManagerTasks();
+});
+
+/* ===================== TASK DETAIL MODAL ===================== */
+async function openDetail(taskId){
+  activeTaskId = taskId;
+  const t = allTasks.find(x=>x.id === taskId);
+  if(!t) return;
+  const assignee = profilesById[t.assigned_to];
+  const assigner = profilesById[t.assigned_by];
+
+  $("#dt-title").textContent = t.title;
+  $("#dt-priority").textContent = t.priority;
+  $("#dt-priority").className = `prio-tag prio-${t.priority}`;
+  $("#dt-id").textContent = `#${shortId(t.id)}`;
+  $("#dt-desc").textContent = t.description || "No description provided.";
+  $("#dt-assignee").textContent = assignee ? assignee.full_name : "—";
+  $("#dt-assigner").textContent = assigner ? assigner.full_name : "—";
+  $("#dt-due").textContent = t.due_date ? fmtDate(t.due_date) : "No due date";
+  $("#dt-created").textContent = fmtDate(t.created_at);
+
+  const canEditStatus = myProfile.role === "manager" || t.assigned_to === myProfile.id;
+  const statusRow = $("#dt-status-row");
+  statusRow.innerHTML = "";
+  STATUS_ORDER.forEach(s=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "status-btn" + (s === t.status ? " current" : "");
+    b.textContent = STATUS_LABELS[s];
+    b.disabled = !canEditStatus || s === t.status;
+    b.addEventListener("click", ()=> changeStatus(t.id, s));
+    statusRow.appendChild(b);
+  });
+
+  $("#dt-note").value = "";
+  $("#detail-modal").classList.remove("hidden");
+  await loadTaskUpdates(taskId);
+}
+
+$("#close-detail").addEventListener("click", ()=>{
+  $("#detail-modal").classList.add("hidden");
+  activeTaskId = null;
+});
+$("#detail-modal").addEventListener("click", (e)=>{
+  if(e.target.id === "detail-modal"){ $("#detail-modal").classList.add("hidden"); activeTaskId = null; }
+});
+
+async function changeStatus(taskId, newStatus){
+  const { error } = await db.from("tasks").update({ status: newStatus }).eq("id", taskId);
+  if(error){ showToast("Couldn't update status: " + error.message, true); return; }
+  await db.from("task_updates").insert({
+    task_id: taskId, user_id: myProfile.id, status_change: newStatus
+  });
+  showToast("Status updated.");
+  // refresh local + modal
+  if(myProfile.role === "manager") await loadManagerTasks(); else await loadMemberTasks();
+  const t = allTasks.find(x=>x.id === taskId);
+  if(t) openDetail(taskId);
+}
+
+async function loadTaskUpdates(taskId){
+  const wrap = $("#dt-updates");
+  wrap.innerHTML = `<div class="loading-row"><span class="spinner"></span> Loading log…</div>`;
+  const { data, error } = await db.from("task_updates")
+    .select("*")
+    .eq("task_id", taskId)
+    .order("created_at", { ascending:false });
+  if(error){ wrap.innerHTML = `<p style="font-size:13px;color:var(--ink-soft);">Couldn't load updates.</p>`; return; }
+  if(!data || data.length === 0){
+    wrap.innerHTML = `<p style="font-size:13px;color:var(--ink-soft);">No updates yet — be the first to post one.</p>`;
+    return;
+  }
+  wrap.innerHTML = "";
+  data.forEach(u=>{
+    const author = profilesById[u.user_id];
+    const item = document.createElement("div");
+    item.className = "update-item";
+    item.innerHTML = `
+      <span class="avatar">${initials(author ? author.full_name : "?")}</span>
+      <div class="update-content">
+        <div class="u-head">
+          <span class="u-name">${author ? escapeHtml(author.full_name) : "Someone"}</span>
+          <span class="u-time">${fmtDateTime(u.created_at)}</span>
+        </div>
+        ${u.note ? `<div class="u-note">${escapeHtml(u.note)}</div>` : ""}
+        ${u.status_change ? `<span class="u-status-chip">→ moved to ${STATUS_LABELS[u.status_change] || u.status_change}</span>` : ""}
+      </div>
+    `;
+    wrap.appendChild(item);
+  });
+}
+
+$("#dt-post-update").addEventListener("click", async ()=>{
+  const note = $("#dt-note").value.trim();
+  if(!note || !activeTaskId) return;
+  const btn = $("#dt-post-update");
+  btn.disabled = true;
+  const { error } = await db.from("task_updates").insert({
+    task_id: activeTaskId, user_id: myProfile.id, note
+  });
+  btn.disabled = false;
+  if(error){ showToast("Couldn't post update: " + error.message, true); return; }
+  $("#dt-note").value = "";
+  loadTaskUpdates(activeTaskId);
+});
 %%ENDSCRIPT%%>
 </body>
 </html>
