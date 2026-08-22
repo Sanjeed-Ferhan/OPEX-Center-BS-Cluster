@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Akij Resource Ltd — Manpower Organogram</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+:root{
+  --paper:#efe9dc;
+  --ink:#221d16;
+  --muted:#8a8172;
+  --line:#ddd4bf;
+  --card:#fbf9f3;
+  --accent:#8f5e14;
+  --accent-soft:#f2e3c8;
+  font-family:'IBM Plex Sans', sans-serif;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);}
+::selection{background:var(--accent-soft);}
+
+/* ---------- shell ---------- */
+.shell{display:grid;grid-template-columns:280px 1fr;min-height:100vh;}
+@media(max-width:880px){.shell{grid-template-columns:1fr;}}
+
+/* ---------- sidebar ---------- */
+.rail{
+  background:#1b170f; color:#efe7d6; padding:26px 18px 24px;
+  display:flex; flex-direction:column; gap:22px; position:sticky; top:0; align-self:start; min-height:100vh;
+}
+@media(max-width:880px){.rail{position:relative;min-height:auto;}}
+.rail-brand{padding:0 6px 16px;border-bottom:1px solid #3a3323;}
+.rail-brand .mark{
+  font-family:'Fraunces',serif; font-size:26px; font-weight:700; letter-spacing:.2px; color:#f4e9c8;
+}
+.rail-brand .sub{font-size:11px; letter-spacing:1.6px; text-transform:uppercase; color:#9c927a; margin-top:4px;}
+
+.rail-list{display:flex;flex-direction:column;gap:4px;flex:1;}
+.rail-item{
+  display:flex; align-items:center; gap:12px; padding:11px 10px; border-radius:8px;
+  cursor:pointer; border:1px solid transparent; background:transparent; text-align:left;
+  transition:background .15s ease, border-color .15s ease;
+}
+.rail-item:hover{background:#241f14;}
+.rail-item.active{background:#2a2416; border-color:#4a4128;}
+.swatch{width:9px;height:9px;border-radius:50%;flex:none;box-shadow:0 0 0 3px rgba(255,255,255,.05);}
+.rail-item .txt{display:flex;flex-direction:column;gap:1px;min-width:0;}
+.rail-item .name{font-size:13.5px;font-weight:600;color:#f2ead5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rail-item .role{font-size:10.5px;color:#8f846b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+.rail-foot{border-top:1px solid #3a3323;padding-top:14px;font-size:10.5px;color:#7c7258;line-height:1.5;}
+
+/* ---------- main ---------- */
+.main{min-width:0;}
+.hero{
+  padding:34px 40px 26px; position:relative; overflow:hidden;
+  background:linear-gradient(150deg,var(--accent-dark,#1c331e),var(--accent,#2f5233));
+  color:#f7f2e3; border-bottom:5px solid var(--accent-line,#c98a2c);
+}
+.hero .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; opacity:.75;}
+.hero h1{font-family:'Fraunces',serif; font-weight:600; font-size:clamp(26px,3.4vw,38px); margin:6px 0 6px; letter-spacing:.2px;}
+.hero p{margin:0; font-size:13.5px; opacity:.85; max-width:640px;}
+.hero .flow{display:flex; align-items:center; gap:10px; margin-top:18px; flex-wrap:wrap;}
+.hero .node{
+  background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.25); padding:8px 16px;
+  border-radius:7px; font-size:12.5px; font-weight:600; letter-spacing:.2px;
+}
+.hero .arrow{opacity:.55; font-size:14px;}
+
+.statusbar{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:12px 40px; background:var(--card); border-bottom:1px solid var(--line); flex-wrap:wrap;
+}
+.statusbar .status{font-size:12px; color:var(--muted); display:flex; align-items:center; gap:7px;}
+.dot{width:7px;height:7px;border-radius:50%; background:#9c927a;}
+.dot.ok{background:#3f8a53;}
+.dot.busy{background:#c98a2c; animation:pulse 1s infinite;}
+.dot.err{background:#a33636;}
+@keyframes pulse{50%{opacity:.35;}}
+.statusbar .btns{display:flex;gap:8px;}
+.mini-btn{
+  border:1px solid var(--line); background:var(--card); color:var(--ink); font-size:12px; font-weight:600;
+  padding:7px 13px; border-radius:6px; cursor:pointer; letter-spacing:.1px;
+}
+.mini-btn:hover{background:var(--accent-soft);}
+.mini-btn.primary{background:var(--accent); color:#fff; border-color:var(--accent);}
+.mini-btn.primary:hover{filter:brightness(1.08);}
+
+.summary-strip{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; padding:22px 40px 4px;}
+@media(max-width:640px){.summary-strip{grid-template-columns:repeat(2,1fr);}}
+.stat{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px;}
+.stat .label{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; font-family:'IBM Plex Mono',monospace;}
+.stat .val{font-family:'Fraunces',serif; font-size:28px; font-weight:600; color:var(--ink); margin-top:3px;}
+.stat.vacant .val{color:var(--accent);}
+
+.note{margin:18px 40px 0; font-size:12.5px; color:var(--muted); background:var(--accent-soft); border:1px dashed var(--line); border-radius:8px; padding:12px 16px; max-width:900px;}
+
+.layout{padding:20px 40px 4px; columns:2 440px; column-gap:18px;}
+.layout.flat-layout{columns:1; padding:20px 40px 4px;}
+@media(max-width:1000px){.layout{columns:1;}}
+
+.card{background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; break-inside:avoid; margin-bottom:18px; display:inline-block; width:100%; vertical-align:top;}
+.card h2{margin:0; padding:12px 16px; font-size:14px; background:var(--accent); color:#fff; display:flex; justify-content:space-between; align-items:center; font-weight:600;}
+.card h2 .sub{font-size:11px; font-weight:400; opacity:.9;}
+.subhead{background:var(--accent-soft); color:var(--accent); font-size:11px; font-weight:700; padding:6px 16px; border-bottom:1px solid var(--line); border-top:1px solid var(--line); text-transform:uppercase; letter-spacing:.4px;}
+
+table{width:100%; border-collapse:collapse; font-size:12.5px;}
+th{background:#f4f0e2; color:var(--accent); font-size:10.3px; text-transform:uppercase; letter-spacing:.3px; padding:8px 8px; text-align:center; border-bottom:1px solid var(--line); font-family:'IBM Plex Mono',monospace;}
+th.designation, th.dept{text-align:left;}
+td{padding:6px 8px; border-bottom:1px solid #eee6d4; text-align:center;}
+td.designation, td.dept{text-align:left; outline:none; cursor:text;}
+tr:hover td{background:#f7f3e6;}
+td[contenteditable]:focus{background:var(--accent-soft); box-shadow:inset 0 0 0 1.5px var(--accent);}
+.num{width:52px;}
+.ot{color:var(--muted); font-size:11.5px;}
+.shift-badge{font-size:10px; padding:1px 7px; border-radius:10px; font-weight:600;}
+.shift-badge.General{background:#e7e0cc;color:#6b5c33;}
+.shift-badge.Shifting{background:var(--accent-soft); color:var(--accent);}
+.vacant-cell{font-weight:700;}
+.vacant-cell.pos{color:var(--accent);}
+.vacant-cell.neg{color:#a33636;}
+.vacant-cell.zero{color:#3f8a53;}
+.rowbtn{border:none;background:transparent;color:#c3b89e;cursor:pointer;font-size:15px;line-height:1;padding:2px 4px;}
+.rowbtn:hover{color:#a33636;}
+tfoot td{background:#f4f0e2; font-weight:700; color:var(--ink); border-top:2px solid var(--accent);}
+.addrow{display:block; width:100%; text-align:left; padding:9px 16px; background:#f9f6ec; border:none; border-top:1px dashed var(--line); color:var(--accent); font-size:12px; cursor:pointer; font-weight:600;}
+.addrow:hover{background:var(--accent-soft);}
+
+.topsheet td.section{text-align:left; font-weight:600;}
+.topsheet tr.total-row td{background:var(--accent-soft); font-weight:800; color:var(--accent); font-size:14px;}
+
+.empty{padding:60px 40px; text-align:center; color:var(--muted); font-size:14px;}
+
+/* company accent themes injected via CSS variables per active company */
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="rail">
+    <div class="rail-brand">
+      <div class="mark">Akij Resource Ltd</div>
+      <div class="sub">Manpower &amp; Organogram</div>
+    </div>
+    <nav class="rail-list" id="railList"></nav>
+    <div class="rail-foot">Click a business unit to open its organogram. Every number and name is editable — changes save automatically.</div>
+  </aside>
+
+  <main class="main">
+    <div class="hero" id="hero"></div>
+    <div class="statusbar">
+      <div class="status"><span class="dot" id="statusDot"></span><span id="statusText">Loading…</span></div>
+      <div class="btns">
+        <button class="mini-btn" id="reloadBtn">Reload</button>
+      </div>
+    </div>
+    <div class="summary-strip" id="summaryStrip"></div>
+    <div id="noteBox"></div>
+    <div id="stage"></div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL = 'https://vpwbcuxwxkqvauffqooj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_1zZ68nxCL0XK0gPQDG5fsg_CqWCCBEU';
+let sb = null;
+try{ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }catch(e){ sb = null; }
+
+/* ============ AAFL default sample data (local-storage backed) ============ */
+const AAFL_DEFAULT = {
+  "HR & Admin": [
+    ["Deputy Manager/Manager",1,1],["Asst. Officer/Officer/Senior Officer",1,1],
+    ["Security Incharge/Officer",1,0],["Facilities Supervisor/Imam",1,0],
+    ["Security Supervisor",3,0],["Security Guard",22,22],["IT Officer",1,0],
+    ["Cleaner/Sweeper/Helper",6,5],["Office Assistant",2,1],["Cook",3,2],
+    ["Cook Helper",3,1],["Gardener",1,1],["Scale Operator",3,3],["Fair shop Assistant",2,1]
+  ],
+  "Production": [
+    ["Production Manager",1,0],["Deputy Manager/Assistant Manager",1,1],
+    ["Shift Incharge/Officer",4,3],["CCR Engineer",6,7],["Silo Engineer/Operator",2,2],
+    ["Pellet Operator",6,6],["Extruder Operator",3,3],["Pellet & Extruder Helper",7,4],
+    ["Packing Supervisor & Robot Operator",3,3],["Silo Helper",1,1],["Sewing Operator",10,12],
+    ["Sewing Helper",10,12],["Premix Supervisor",2,1],["Medicine Man (Premix)",10,9],
+    ["Medicine (Dumping)",10,9],["Dumping Supervisor",2,1],["Cleaner (Tower)",6,6],
+    ["Booster Dose Mixer",0,0]
+  ],
+  "Mechanical": [
+    ["Deputy Manager",1,1],["Assistant Manager",1,1],["Engineer",1,2],
+    ["Boiler Operator",3,3],["Foreman",1,1],["Welder",2,1],
+    ["Sr. Machine/Mechanic",4,2],["Mechanical Fitter",7,6],["Mechanical Helper",5,5]
+  ],
+  "Electrical": [
+    ["Sr. Manager/Manager",1,0],["Deputy Manager/Assistant Manager",1,1],
+    ["Sr. Engineer/Engineer/Sub Assistant Engineer",3,3],["Sr. Foreman/Foreman",1,0],
+    ["Sr. Electrician/Electrician",7,7],["AC Technician",1,0],["Electrical Helper",2,0]
+  ],
+  "Finance & VAT": [["Assistant Manager (AC)",1,1],["Officer (VAT)",1,1]],
+  "Opex": [["Senior Officer (OPEX)",1,1],["Assistant Officer (OPEX)",1,1],["Senior Officer (Planning)",1,1]],
+  "Quality Control": [
+    ["General(Overall) Consultant (Poultry & Ruminant)",1,1],["General(Overall) Consultant (Aqua)",1,1],
+    ["General(Overall) AGM (Nutrition)",1,1],["General(Overall) DM/Officer (Nutrition)",2,1],
+    ["General Lab (In Charge) AM",1,1],["General (Physical QC) DM",1,1],
+    ["General (Lab Assistant) Supervisor",2,2],["General (Physical QC) Supervisor",1,1],
+    ["General (RM QC) Supervisor",3,4],["Line QC Supervisor",6,6],["R&D Supervisor",2,2]
+  ],
+  "Sustainability": [
+    ["DM/AM",1,1],["Sr. Officer/Officer",1,1],["Welfare Officer",1,0],["Medical Officer",1,1],
+    ["Supervisor",2,1],["Safety Assistant",4,4],["Medical Assistant",2,1]
+  ],
+  "Inventory": [
+    ["Manager/Deputy Manager",1,1],["Assistant Manager",1,1],["Senior Officer /Officer",3,2],
+    ["Storekeeper",14,14],["Store Assistant/Helper",4,4],["Forklift Operator",10,10],["Cleaner (Warehouse)",4,2]
+  ],
+  "Logistic & Distribution": [
+    ["Deputy Manager (Distribution)",1,1],["Senior Officer (Distribution)",1,1],
+    ["Shift Incharge (Distribution)",4,4],["Supervisor (Distribution)",2,7]
+  ],
+  "Civil": [["Sr. Engineer",1,1],["Sub-Asst Engineer",1,1],["Helper",1,1],["Mason",1,1],["Welder/Fitter",1,0]]
+};
+
+/* ============ Company registry ============ */
+const COMPANIES = [
+  {
+    id:'aafl', short:'AAFL', name:'Akij Agro Feed Ltd', tagline:'Factory · Plant Head — Manpower Dashboard',
+    type:'local', accent:'#8f5e14', accentLine:'#c98a2c', accentDark:'#1c331e', accentBase:'#2f5233',
+    top:'CEO (AAFL)', second:'Plant Head'
+  },
+  {
+    id:'ail', short:'AIL', name:'AIL', tagline:'COO / Plant Head — live-synced organogram',
+    type:'nested', hasShift:true, table:'ORGANOGRAM AIL',
+    accent:'#8a3a13', accentLine:'#c1521f', accentDark:'#274a72', accentBase:'#3a6ea5',
+    top:'COO / Plant Head', second:'Departments & Sections'
+  },
+  {
+    id:'mrml', short:'MRML', name:'Monowara Rice Mills Limited', tagline:'Baipur, Chobbish Nagor, Godagari, Rajshahi',
+    type:'nested', hasShift:false, table:'ORGANOGRAM MRML',
+    accent:'#8a3a13', accentLine:'#c1521f', accentDark:'#274a72', accentBase:'#3a6ea5',
+    top:'CEO (MRML)', second:'Plant Head'
+  },
+  {
+    id:'flour', short:'F&D', name:'Flour & Daal Mills', tagline:'Production, Admin, and support sections',
+    type:'nested', hasShift:true, table:'ORGANOGRAM FLOUE AND DAL',
+    accent:'#8a3a13', accentLine:'#c1521f', accentDark:'#274a72', accentBase:'#3a6ea5',
+    top:'Organogram', second:'Plant Head',
+    note:"Note: the source sheet's Admin/HR section states a total of 51 existing, but its own listed designation rows sum to 55 (this table uses the itemised rows, matching Production and Sustainability totals exactly). The company-wide summary also excludes the small IT section (1 person) shown separately. Worth a quick check against the original sheet if precision matters."
+  },
+  {
+    id:'accl', short:'ACCL', name:'Akij Cement Company Limited', tagline:'Section-level manpower status',
+    type:'flat', table:'ORGANOGRAM ACCL',
+    accent:'#7a3216', accentLine:'#a8461f', accentDark:'#232e40', accentBase:'#3a4a63',
+    top:'Managing Director', topSub:'(SK. Jashim Uddin)', second:'Chief Operating Officer',
+    note:"This view reflects the section-level manpower summary from the organogram sheet. The underlying sheet also breaks each section down by shift and individual designation (e.g. Production → VRM-1,2 & Unloading → DGM/GM) — ask if you'd like that fully detailed, per-designation version built out too."
+  },
+  {
+    id:'apfil', short:'APFIL', name:'Akij Poly Fibre Ind. Ltd', tagline:'Section-level manpower status',
+    type:'flat', table:'ORGANOGRAM APFIL',
+    accent:'#7a3216', accentLine:'#a8461f', accentDark:'#232e40', accentBase:'#3a4a63',
+    top:'Managing Director', topSub:'(SK. Jashim Uddin)', second:'Plant Head (Operations)',
+    note:"This view reflects the section-level manpower summary from the organogram sheet. The underlying sheet also breaks Production down into dozens of shift × sub-section × designation rows (Loom, Lamination, Tape Line, Printing, etc. across Shift-A/B/C) — ask if you'd like the fully detailed per-designation version built out too."
+  }
+];
+
+let activeId = COMPANIES[0].id;
+const cache = {}; // per-company loaded data
+
+/* ============ helpers ============ */
+function vClass(v){ return v>0 ? 'pos' : (v<0 ? 'neg' : 'zero'); }
+function fmtOT(v){ return (v===null||v===undefined||v==='') ? '—' : Number(v).toLocaleString(); }
+function setStatus(state, text){
+  document.getElementById('statusDot').className = 'dot ' + state;
+  document.getElementById('statusText').textContent = text;
+}
+
+function applyTheme(c){
+  document.documentElement.style.setProperty('--accent', c.accent);
+  document.documentElement.style.setProperty('--accent-line', c.accentLine);
+  document.documentElement.style.setProperty('--accent-soft', c.accent + '1a');
+  document.documentElement.style.setProperty('--accent-dark', c.accentDark);
+}
+
+function renderRail(){
+  const list = document.getElementById('railList');
+  list.innerHTML = '';
+  COMPANIES.forEach(c=>{
+    const btn = document.createElement('button');
+    btn.className = 'rail-item' + (c.id===activeId ? ' active' : '');
+    btn.innerHTML = `<span class="swatch" style="background:${c.accentLine}"></span>
+      <span class="txt"><span class="name">${c.short} — ${c.name}</span><span class="role">${c.tagline}</span></span>`;
+    btn.addEventListener('click', ()=> selectCompany(c.id));
+    list.appendChild(btn);
+  });
+}
+
+function renderHero(c){
+  const hero = document.getElementById('hero');
+  hero.innerHTML = `
+    <div class="eyebrow">Business Unit</div>
+    <h1>${c.name}</h1>
+    <p>${c.tagline}</p>
+    <div class="flow">
+      <div class="node">${c.top}${c.topSub ? '<br><span style=\"font-weight:400;font-size:11px;opacity:.85\">'+c.topSub+'</span>' : ''}</div>
+      <span class="arrow">→</span>
+      <div class="node">${c.second}</div>
+    </div>`;
+}
+
+/* ============ Company select / load ============ */
+async function selectCompany(id){
+  activeId = id;
+  const c = COMPANIES.find(x=>x.id===id);
+  applyTheme(c);
+  renderRail();
+  renderHero(c);
+  document.getElementById('noteBox').innerHTML = c.note ? `<div class="note">${c.note}</div>` : '';
+  document.getElementById('stage').innerHTML = '';
+  document.getElementById('summaryStrip').innerHTML = '';
+  await loadCompany(c);
+}
+
+async function loadCompany(c, force){
+  if(!force && cache[c.id]){ renderStage(c); return; }
+  setStatus('busy', 'Loading ' + c.short + '…');
+  try{
+    if(c.type === 'local'){
+      let data;
+      try{
+        const res = await window.storage.get('aafl-data');
+        data = res && res.value ? JSON.parse(res.value) : JSON.parse(JSON.stringify(AAFL_DEFAULT));
+      }catch(e){ data = JSON.parse(JSON.stringify(AAFL_DEFAULT)); }
+      cache[c.id] = data;
+      setStatus('ok', 'All changes saved locally');
+    } else if(c.type === 'nested'){
+      if(!sb) throw new Error('no supabase client');
+      const { data: rows, error } = await sb.from(c.table).select('*').order('department').order('sub_section').order('id');
+      if(error) throw error;
+      const grouped = {};
+      (rows||[]).forEach(r=>{
+        if(!grouped[r.department]) grouped[r.department] = {};
+        if(!grouped[r.department][r.sub_section]) grouped[r.department][r.sub_section] = [];
+        grouped[r.department][r.sub_section].push({
+          id:r.id, designation:r.designation, shift_type:r.shift_type,
+          existing:r.existing, demand:r.demand, vacant:r.vacant
+        });
+      });
+      cache[c.id] = grouped;
+      setStatus(Object.keys(grouped).length ? 'ok' : 'err', Object.keys(grouped).length ? 'Connected to Supabase' : 'Connected, but no rows found');
+    } else if(c.type === 'flat'){
+      if(!sb) throw new Error('no supabase client');
+      const { data: rows, error } = await sb.from(c.table).select('*').order('id');
+      if(error) throw error;
+      cache[c.id] = rows || [];
+      setStatus(rows && rows.length ? 'ok' : 'err', rows && rows.length ? 'Connected to Supabase' : 'Connected, but no rows found');
+    }
+  }catch(err){
+    cache[c.id] = c.type === 'flat' ? [] : {};
+    setStatus('err', 'Could not connect — showing empty state');
+  }
+  renderStage(c);
+}
+
+/* ============ Rendering per type ============ */
+function renderStage(c){
+  if(c.type === 'local') renderLocal(c);
+  else if(c.type === 'nested') renderNested(c);
+  else if(c.type === 'flat') renderFlat(c);
+}
+
+/* ---- LOCAL (AAFL) ---- */
+function localTotals(rows){
+  let demand=0, existing=0;
+  rows.forEach(r=>{demand+=Number(r[1])||0; existing+=Number(r[2])||0;});
+  return {demand, existing, vacant:demand-existing};
+}
+function renderLocal(c){
+  const data = cache[c.id];
+  const stage = document.getElementById('stage');
+  const deptNames = Object.keys(data);
+  const layout = document.createElement('div');
+  layout.className = 'layout';
+
+  deptNames.forEach(dept=>{
+    const rows = data[dept];
+    const t = localTotals(rows);
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <h2>${dept} <span class="sub">${t.existing}/${t.demand} filled</span></h2>
+      <table>
+        <thead><tr><th class="designation">Designation</th><th class="num">Demand</th><th class="num">Existing</th><th class="num">Vacant</th><th></th></tr></thead>
+        <tbody>${rows.map((r,i)=>`<tr>
+          <td class="designation" contenteditable="true" data-dept="${dept}" data-i="${i}" data-field="0">${r[0]}</td>
+          <td class="num" contenteditable="true" data-dept="${dept}" data-i="${i}" data-field="1">${r[1]}</td>
+          <td class="num" contenteditable="true" data-dept="${dept}" data-i="${i}" data-field="2">${r[2]}</td>
+          <td class="num vacant-cell ${vClass(r[1]-r[2])}">${r[1]-r[2]}</td>
+          <td><button class="rowbtn" data-dept="${dept}" data-i="${i}">✕</button></td>
+        </tr>`).join('')}</tbody>
+        <tfoot><tr><td class="designation">Total</td><td class="num">${t.demand}</td><td class="num">${t.existing}</td>
+          <td class="num vacant-cell ${vClass(t.vacant)}">${t.vacant}</td><td></td></tr></tfoot>
+      </table>
+      <button class="addrow" data-dept="${dept}">+ add designation</button>`;
+    layout.appendChild(card);
+  });
+
+  const ts = document.createElement('div');
+  ts.className = 'card topsheet';
+  const sectionRows = deptNames.map(d=>{
+    const t = localTotals(data[d]);
+    return `<tr><td class="section">${d}</td><td class="num">${t.demand}</td><td class="num">${t.existing}</td><td class="num vacant-cell ${vClass(t.vacant)}">${t.vacant}</td></tr>`;
+  }).join('');
+  const grand = deptNames.reduce((a,d)=>{ const t=localTotals(data[d]); a.demand+=t.demand; a.existing+=t.existing; a.vacant+=t.vacant; return a; },{demand:0,existing:0,vacant:0});
+  ts.innerHTML = `<h2>Top sheet — company-wide summary</h2>
+    <table><thead><tr><th class="designation">Section</th><th class="num">Total required</th><th class="num">Existing</th><th class="num">Vacant</th></tr></thead>
+    <tbody>${sectionRows}</tbody>
+    <tfoot><tr class="total-row"><td class="section">Summary</td><td class="num">${grand.demand}</td><td class="num">${grand.existing}</td><td class="num">${grand.vacant}</td></tr></tfoot></table>`;
+  layout.appendChild(ts);
+
+  stage.innerHTML = '';
+  stage.appendChild(layout);
+  renderSummary(grand.demand, grand.existing, grand.vacant, deptNames.length, 'Departments');
+
+  stage.querySelectorAll('td[contenteditable]').forEach(td=>{
+    td.addEventListener('blur', localCellEdit);
+    td.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); td.blur(); }});
+  });
+  stage.querySelectorAll('.rowbtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      data[btn.dataset.dept].splice(Number(btn.dataset.i),1);
+      localPersist(); renderLocal(c);
+    });
+  });
+  stage.querySelectorAll('.addrow').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      data[btn.dataset.dept].push(["New designation",0,0]);
+      localPersist(); renderLocal(c);
+    });
+  });
+
+  function localCellEdit(e){
+    const td = e.target;
+    const dept = td.dataset.dept, i = Number(td.dataset.i), field = Number(td.dataset.field);
+    let val = td.textContent.trim();
+    if(field !== 0){ val = val.replace(/[^-\d]/g,''); val = val===''?0:parseInt(val,10); }
+    data[dept][i][field] = val;
+    localPersist(); renderLocal(c);
+  }
+  async function localPersist(){
+    setStatus('busy','Saving…');
+    try{ await window.storage.set('aafl-data', JSON.stringify(data)); setStatus('ok','All changes saved locally'); }
+    catch(err){ setStatus('err','Save failed — kept in memory'); }
+  }
+}
+
+/* ---- NESTED (AIL / MRML / Flour & Daal) ---- */
+function subTotals(rows){
+  let existing=0, vacant=0, demand=0;
+  rows.forEach(r=>{existing+=Number(r.existing)||0; vacant+=Number(r.vacant)||0; demand+=Number(r.demand)||0;});
+  return {existing, vacant, demand};
+}
+function deptTotalsNested(subsections){
+  let existing=0, vacant=0, demand=0;
+  Object.values(subsections).forEach(rows=>{ const t=subTotals(rows); existing+=t.existing; vacant+=t.vacant; demand+=t.demand; });
+  return {existing, vacant, demand};
+}
+function renderNested(c){
+  const data = cache[c.id];
+  const stage = document.getElementById('stage');
+  const deptNames = Object.keys(data);
+
+  if(deptNames.length===0){
+    stage.innerHTML = `<div class="empty">No rows found for ${c.name} yet. Check the Supabase connection or add data to “${c.table}”.</div>`;
+    renderSummary(0,0,0,0,'Departments');
+    return;
+  }
+
+  const layout = document.createElement('div');
+  layout.className = 'layout';
+
+  deptNames.forEach(dept=>{
+    const subsections = data[dept];
+    const dt = deptTotalsNested(subsections);
+    const card = document.createElement('div');
+    card.className = 'card';
+    let body = `<h2>${dept} <span class="sub">${dt.existing}/${dt.demand} filled</span></h2>`;
+    Object.keys(subsections).forEach(sub=>{
+      const rows = subsections[sub];
+      const st = subTotals(rows);
+      body += `<div class="subhead">${sub}</div>
+        <table>
+          <thead><tr><th class="designation">Designation</th>${c.hasShift?'<th class="num">Shift</th>':''}<th class="num">Existing</th><th class="num">Demand</th><th class="num">Vacant</th><th></th></tr></thead>
+          <tbody>${rows.map((r,i)=>nestedRowHtml(c,dept,sub,i,r)).join('')}</tbody>
+          <tfoot><tr><td class="designation">Subtotal</td>${c.hasShift?'<td></td>':''}<td class="num">${st.existing}</td><td class="num">${st.demand}</td>
+          <td class="num vacant-cell ${vClass(st.vacant)}">${st.vacant}</td><td></td></tr></tfoot>
+        </table>
+        <button class="addrow" data-dept="${dept}" data-sub="${sub}">+ add designation to ${sub}</button>`;
+    });
+    card.innerHTML = body;
+    layout.appendChild(card);
+  });
+
+  const ts = document.createElement('div');
+  ts.className = 'card topsheet';
+  const rowsHtml = deptNames.map(d=>{
+    const t = deptTotalsNested(data[d]);
+    return `<tr><td class="section">${d}</td><td class="num">${t.demand}</td><td class="num">${t.existing}</td><td class="num vacant-cell ${vClass(t.vacant)}">${t.vacant}</td></tr>`;
+  }).join('');
+  const grand = deptNames.reduce((a,d)=>{ const t=deptTotalsNested(data[d]); a.demand+=t.demand; a.existing+=t.existing; a.vacant+=t.vacant; return a; },{demand:0,existing:0,vacant:0});
+  ts.innerHTML = `<h2>Top sheet — company-wide summary</h2>
+    <table><thead><tr><th class="designation">Section</th><th class="num">Total required</th><th class="num">Existing</th><th class="num">Vacant</th></tr></thead>
+    <tbody>${rowsHtml}</tbody>
+    <tfoot><tr class="total-row"><td class="section">Summary</td><td class="num">${grand.demand}</td><td class="num">${grand.existing}</td><td class="num">${grand.vacant}</td></tr></tfoot></table>`;
+  layout.appendChild(ts);
+
+  stage.innerHTML = '';
+  stage.appendChild(layout);
+  renderSummary(grand.demand, grand.existing, grand.vacant, deptNames.length, 'Departments');
+
+  stage.querySelectorAll('td[contenteditable]').forEach(td=>{
+    td.addEventListener('blur', e=>nestedCellEdit(c, e));
+    td.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); td.blur(); }});
+  });
+  stage.querySelectorAll('.rowbtn').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const {dept, sub, i} = btn.dataset;
+      const row = data[dept][sub][Number(i)];
+      data[dept][sub].splice(Number(i),1);
+      renderNested(c);
+      if(sb && row.id){
+        setStatus('busy','Saving…');
+        const { error } = await sb.from(c.table).delete().eq('id', row.id);
+        setStatus(error?'err':'ok', error?'Save failed — check connection':'Connected to Supabase');
+      }
+    });
+  });
+  stage.querySelectorAll('.addrow').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const {dept, sub} = btn.dataset;
+      const newRow = {designation:'New designation', shift_type:'General', existing:0, demand:0, vacant:0};
+      setStatus('busy','Saving…');
+      if(sb){
+        const insertObj = { department:dept, sub_section:sub, designation:newRow.designation, existing:0, demand:0 };
+        if(c.hasShift){ insertObj.shift_type = newRow.shift_type; insertObj.vacant = 0; }
+        const { data: inserted, error } = await sb.from(c.table).insert(insertObj).select().single();
+        if(!error) newRow.id = inserted.id;
+        setStatus(error?'err':'ok', error?'Save failed — check connection':'Connected to Supabase');
+      }
+      data[dept][sub].push(newRow);
+      renderNested(c);
+    });
+  });
+}
+function nestedRowHtml(c, dept, sub, i, r){
+  return `<tr>
+    <td class="designation" contenteditable="true" data-dept="${dept}" data-sub="${sub}" data-i="${i}" data-field="designation">${r.designation}</td>
+    ${c.hasShift ? `<td class="num"><span class="shift-badge ${r.shift_type}">${r.shift_type==='Shifting'?'Shift':'Gen'}</span></td>` : ''}
+    <td class="num" contenteditable="true" data-dept="${dept}" data-sub="${sub}" data-i="${i}" data-field="existing">${r.existing}</td>
+    <td class="num" contenteditable="true" data-dept="${dept}" data-sub="${sub}" data-i="${i}" data-field="demand">${r.demand}</td>
+    <td class="num vacant-cell ${vClass(r.vacant)}" ${c.hasShift?`contenteditable="true" data-dept="${dept}" data-sub="${sub}" data-i="${i}" data-field="vacant"`:''}>${r.vacant}</td>
+    <td><button class="rowbtn" data-dept="${dept}" data-sub="${sub}" data-i="${i}">✕</button></td>
+  </tr>`;
+}
+async function nestedCellEdit(c, e){
+  const td = e.target;
+  const {dept, sub, field} = td.dataset;
+  const i = Number(td.dataset.i);
+  let val = td.textContent.trim();
+  if(field !== 'designation'){ val = val.replace(/[^-\d]/g,''); val = val===''?0:parseInt(val,10); }
+  const row = cache[c.id][dept][sub][i];
+  row[field] = val;
+  if(!c.hasShift && (field==='demand' || field==='existing')){
+    row.vacant = (Number(row.demand)||0) - (Number(row.existing)||0);
+  }
+  renderNested(c);
+  if(sb && row.id){
+    setStatus('busy','Saving…');
+    const { error } = await sb.from(c.table).update({ [field]: val, updated_at: new Date().toISOString() }).eq('id', row.id);
+    setStatus(error?'err':'ok', error?'Save failed — check connection':'Connected to Supabase');
+  }
+}
+
+/* ---- FLAT (ACCL / APFIL) ---- */
+function renderFlat(c){
+  const rows = cache[c.id];
+  const stage = document.getElementById('stage');
+
+  if(!rows || rows.length===0){
+    stage.innerHTML = `<div class="empty">No rows found for ${c.name} yet. Check the Supabase connection or add data to “${c.table}”.</div>`;
+    renderSummary(0,0,0,0,'Sections');
+    return;
+  }
+
+  const wrap = document.createElement('div');
+  wrap.className = 'layout flat-layout';
+  const totals = rows.reduce((a,r)=>{ a.existing+=Number(r.existing)||0; a.demand+=Number(r.demand)||0; a.vacant+=Number(r.vacant)||0; return a; },{existing:0,demand:0,vacant:0});
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <h2>Sections — manpower status</h2>
+    <table>
+      <thead><tr><th class="dept">Section</th><th class="num">Existing</th><th class="num">Total required</th><th class="num">Vacant</th><th class="num">OT September</th><th class="num">OT October</th><th></th></tr></thead>
+      <tbody>${rows.map((r,i)=>`<tr>
+        <td class="dept" contenteditable="true" data-i="${i}" data-field="department">${r.department}</td>
+        <td class="num" contenteditable="true" data-i="${i}" data-field="existing">${r.existing}</td>
+        <td class="num" contenteditable="true" data-i="${i}" data-field="demand">${r.demand}</td>
+        <td class="num vacant-cell ${vClass(r.vacant)}">${r.vacant}</td>
+        <td class="num ot" contenteditable="true" data-i="${i}" data-field="ot_september">${fmtOT(r.ot_september)}</td>
+        <td class="num ot" contenteditable="true" data-i="${i}" data-field="ot_october">${fmtOT(r.ot_october)}</td>
+        <td><button class="rowbtn" data-i="${i}">✕</button></td>
+      </tr>`).join('')}</tbody>
+      <tfoot><tr><td class="dept">Summary</td><td class="num">${totals.existing}</td><td class="num">${totals.demand}</td>
+        <td class="num vacant-cell ${vClass(totals.vacant)}">${totals.vacant}</td><td></td><td></td><td></td></tr></tfoot>
+    </table>
+    <button class="addrow" id="flatAddRow">+ add section</button>`;
+  wrap.appendChild(card);
+
+  stage.innerHTML = '';
+  stage.appendChild(wrap);
+  renderSummary(totals.demand, totals.existing, totals.vacant, rows.length, 'Sections');
+
+  stage.querySelectorAll('td[contenteditable]').forEach(td=>{
+    td.addEventListener('blur', e=>flatCellEdit(c, e));
+    td.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); td.blur(); }});
+  });
+  stage.querySelectorAll('.rowbtn').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const i = Number(btn.dataset.i);
+      const row = rows[i];
+      rows.splice(i,1);
+      renderFlat(c);
+      if(sb && row.id){
+        setStatus('busy','Saving…');
+        const { error } = await sb.from(c.table).delete().eq('id', row.id);
+        setStatus(error?'err':'ok', error?'Save failed — check connection':'Connected to Supabase');
+      }
+    });
+  });
+  const addBtn = stage.querySelector('#flatAddRow');
+  if(addBtn) addBtn.addEventListener('click', async ()=>{
+    const newRow = {department:'New section', existing:0, demand:0, vacant:0, ot_september:null, ot_october:null};
+    setStatus('busy','Saving…');
+    if(sb){
+      const { data: inserted, error } = await sb.from(c.table).insert({ department:newRow.department, existing:0, demand:0 }).select().single();
+      if(!error) newRow.id = inserted.id;
+      setStatus(error?'err':'ok', error?'Save failed — check connection':'Connected to Supabase');
+    }
+    rows.push(newRow);
+    renderFlat(c);
+  });
+}
+async function flatCellEdit(c, e){
+  const td = e.target;
+  const i = Number(td.dataset.i), field = td.dataset.field;
+  let val = td.textContent.trim();
+  if(field==='department'){ /* text */ }
+  else if(field==='ot_september' || field==='ot_october'){ val = val.replace(/[^\d.]/g,''); val = val===''?null:parseFloat(val); }
+  else { val = val.replace(/[^-\d]/g,''); val = val===''?0:parseInt(val,10); }
+  const row = cache[c.id][i];
+  row[field] = val;
+  if(field==='demand' || field==='existing'){ row.vacant = (Number(row.demand)||0) - (Number(row.existing)||0); }
+  renderFlat(c);
+  if(sb && row.id){
+    setStatus('busy','Saving…');
+    const { error } = await sb.from(c.table).update({ [field]: val, updated_at: new Date().toISOString() }).eq('id', row.id);
+    setStatus(error?'err':'ok', error?'Save failed — check connection':'Connected to Supabase');
+  }
+}
+
+/* ---- shared summary strip ---- */
+function renderSummary(demand, existing, vacant, count, countLabel){
+  document.getElementById('summaryStrip').innerHTML = `
+    <div class="stat"><div class="label">Total required</div><div class="val">${demand}</div></div>
+    <div class="stat"><div class="label">Total existing</div><div class="val">${existing}</div></div>
+    <div class="stat vacant"><div class="label">Total vacant</div><div class="val">${vacant}</div></div>
+    <div class="stat"><div class="label">${countLabel}</div><div class="val">${count}</div></div>`;
+}
+
+/* ============ boot ============ */
+document.getElementById('reloadBtn').addEventListener('click', ()=>{
+  const c = COMPANIES.find(x=>x.id===activeId);
+  loadCompany(c, true);
+});
+
+renderRail();
+selectCompany(activeId);
+</script>
+</body>
+</html>
